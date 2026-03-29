@@ -1,0 +1,30 @@
+import { NextResponse } from "next/server";
+import { readVehicleById, updateVehicleRecord } from "@/lib/server/vehicle-store";
+import type { TowStatus } from "@/lib/types";
+
+export async function GET(_: Request, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params;
+  const vehicle = await readVehicleById(id);
+
+  if (!vehicle) {
+    return NextResponse.json({ ok: false, message: "Vehicle not found" }, { status: 404 });
+  }
+
+  return NextResponse.json({ ok: true, vehicle });
+}
+
+export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params;
+  const body = await request.json();
+
+  const vehicle = await updateVehicleRecord(id, {
+    currentStatus: String(body.currentStatus || "Observed").trim() as TowStatus,
+    notes: String(body.notes || "").trim()
+  });
+
+  if (!vehicle) {
+    return NextResponse.json({ ok: false, message: "Vehicle not found" }, { status: 404 });
+  }
+
+  return NextResponse.json({ ok: true, vehicle });
+}
