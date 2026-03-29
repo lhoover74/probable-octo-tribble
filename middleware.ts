@@ -2,20 +2,20 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 function buildTarget(pathname: string) {
-  if (pathname === "/dashboard") return "/db/dashboard";
-  if (pathname === "/vehicles") return "/db/vehicles";
-  if (pathname === "/vehicles/new") return "/db/vehicles/new";
-  if (pathname === "/tow-requests") return "/db/tow-requests";
-  if (pathname === "/api/vehicles") return "/api/db-vehicles";
+  if (pathname === "/dashboard") return "/cf/dashboard";
+  if (pathname === "/vehicles") return "/cf/vehicles";
+  if (pathname === "/vehicles/new") return "/cf/vehicles/new";
+  if (pathname === "/tow-requests") return "/cf/tow-requests";
+  if (pathname === "/api/vehicles") return "/api/cf-vehicles";
 
   const vehicleMatch = pathname.match(/^\/vehicles\/([^/]+)$/);
   if (vehicleMatch) {
-    return `/db/vehicles/${vehicleMatch[1]}`;
+    return `/cf/vehicles/${vehicleMatch[1]}`;
   }
 
   const apiVehicleMatch = pathname.match(/^\/api\/vehicles\/([^/]+)$/);
   if (apiVehicleMatch) {
-    return `/api/db-vehicles/${apiVehicleMatch[1]}`;
+    return `/api/cf-vehicles/${apiVehicleMatch[1]}`;
   }
 
   return null;
