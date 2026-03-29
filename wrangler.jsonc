@@ -12,7 +12,7 @@
     {
       "binding": "DB",
       "database_name": "towtrack-db",
-      "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+      "database_id": "c2faa867-7179-48ac-92cb-ee776f007c97"
     }
   ]
 }
