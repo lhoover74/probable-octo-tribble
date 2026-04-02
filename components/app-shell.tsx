@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Car, FileText, Home, Plus, Settings, Truck as TowTruck, Users, Building2 } from "lucide-react";
+import { Car, Database, FileText, Home, Plus, Settings, Truck as TowTruck, Users, Building2 } from "lucide-react";
 import { ReactNode } from "react";
 
 const nav = [
@@ -10,7 +10,8 @@ const nav = [
   { href: "/reports", label: "Reports", icon: FileText },
   { href: "/properties", label: "Properties", icon: Building2 },
   { href: "/users", label: "Users", icon: Users },
-  { href: "/settings", label: "Settings", icon: Settings }
+  { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/cf/admin/data", label: "Admin Data", icon: Database }
 ];
 
 export function AppShell({ children }: { children: ReactNode }) {

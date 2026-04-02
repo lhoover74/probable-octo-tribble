@@ -49,13 +49,13 @@ export default function HomePage() {
 
         <section className="rounded-[2rem] border border-slate-800 bg-slate-900/90 p-6 shadow-soft lg:p-8">
           <h2 className="text-2xl font-semibold text-white">Demo sign in</h2>
-          <p className="mt-2 text-sm text-slate-400">Use any role card to enter the website flow.</p>
+          <p className="mt-2 text-sm text-slate-400">Choose a demo user to set role-based access for this browser session.</p>
 
           <div className="mt-6 space-y-3">
             {users.map((user) => (
               <Link
                 key={user.id}
-                href="/dashboard"
+                href={`/auth/demo/${user.id}`}
                 className="block rounded-2xl border border-slate-800 bg-slate-950/70 p-4 transition hover:border-slate-700 hover:bg-slate-950"
               >
                 <div className="flex items-center justify-between gap-3">
