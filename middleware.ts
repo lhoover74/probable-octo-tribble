@@ -6,6 +6,8 @@ function buildTarget(pathname: string) {
   if (pathname === "/vehicles") return "/cf/vehicles";
   if (pathname === "/vehicles/new") return "/cf/vehicles/new";
   if (pathname === "/tow-requests") return "/cf/tow-requests";
+  if (pathname === "/users") return "/cf/admin/users";
+  if (pathname === "/properties") return "/cf/admin/properties";
   if (pathname === "/api/vehicles") return "/api/cf-vehicles";
 
   const vehicleMatch = pathname.match(/^\/vehicles\/([^/]+)$/);
@@ -40,6 +42,8 @@ export const config = {
     "/vehicles/new",
     "/vehicles/:path*",
     "/tow-requests",
+    "/users",
+    "/properties",
     "/api/vehicles",
     "/api/vehicles/:path*"
   ]

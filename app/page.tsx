@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Shield, Camera, Clock3, Truck as TowTruck } from "lucide-react";
 import { users } from "@/lib/mock-data";
+import { genericLoginAction } from "@/lib/session-actions";
 
 export default function HomePage() {
   return (
@@ -48,25 +49,50 @@ export default function HomePage() {
         </section>
 
         <section className="rounded-[2rem] border border-slate-800 bg-slate-900/90 p-6 shadow-soft lg:p-8">
-          <h2 className="text-2xl font-semibold text-white">Demo sign in</h2>
-          <p className="mt-2 text-sm text-slate-400">Choose a demo user to set role-based access for this browser session.</p>
+          <h2 className="text-2xl font-semibold text-white">Sign in</h2>
+          <p className="mt-2 text-sm text-slate-400">Use the generic login below or tap a demo user to open the app with a preset role.</p>
 
-          <div className="mt-6 space-y-3">
-            {users.map((user) => (
-              <Link
-                key={user.id}
-                href={`/auth/demo/${user.id}`}
-                className="block rounded-2xl border border-slate-800 bg-slate-950/70 p-4 transition hover:border-slate-700 hover:bg-slate-950"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="font-medium text-white">{user.name}</p>
-                    <p className="mt-1 text-sm text-slate-400">{user.email}</p>
+          <form action={genericLoginAction} className="mt-6 space-y-4 rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+            <label className="block">
+              <span className="mb-2 block text-sm text-slate-300">Name</span>
+              <input name="userName" defaultValue="Admin User" className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-white" />
+            </label>
+            <label className="block">
+              <span className="mb-2 block text-sm text-slate-300">Email</span>
+              <input name="userEmail" type="email" placeholder="you@example.com" className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-white" />
+            </label>
+            <label className="block">
+              <span className="mb-2 block text-sm text-slate-300">Role</span>
+              <select name="role" defaultValue="Admin" className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-white">
+                {['Admin', 'Manager', 'Officer/Staff', 'Viewer'].map((role) => (
+                  <option key={role}>{role}</option>
+                ))}
+              </select>
+            </label>
+            <button type="submit" className="w-full rounded-2xl bg-emerald-500 px-4 py-3 text-sm font-medium text-slate-950">
+              Continue with Generic Login
+            </button>
+          </form>
+
+          <div className="mt-6">
+            <p className="text-sm text-slate-400">Or choose a demo user:</p>
+            <div className="mt-3 space-y-3">
+              {users.map((user) => (
+                <Link
+                  key={user.id}
+                  href={`/auth/demo/${user.id}`}
+                  className="block rounded-2xl border border-slate-800 bg-slate-950/70 p-4 transition hover:border-slate-700 hover:bg-slate-950"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="font-medium text-white">{user.name}</p>
+                      <p className="mt-1 text-sm text-slate-400">{user.email}</p>
+                    </div>
+                    <span className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">{user.role}</span>
                   </div>
-                  <span className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">{user.role}</span>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              ))}
+            </div>
           </div>
         </section>
       </div>
