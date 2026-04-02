@@ -100,6 +100,7 @@ export async function createVehicleInD1(input: {
   notes: string;
   currentStatus: TowStatus;
   towingCompany: string;
+  actorName: string;
 }) {
   const db = getDb();
   const repeatRow = await db
@@ -143,8 +144,8 @@ export async function createVehicleInD1(input: {
     input.currentStatus === "Towed" ? now : null,
     input.towingCompany,
     towReference,
-    "Demo User",
-    "Demo User",
+    input.actorName,
+    input.actorName,
     0,
     repeatCount > 0 ? 1 : 0,
     repeatCount
@@ -156,7 +157,7 @@ export async function createVehicleInD1(input: {
     createId("act"),
     id,
     "Record Created",
-    "Demo User",
+    input.actorName,
     now.replace("T", " "),
     `Vehicle ${input.plate || input.vin || "new record"} created at ${input.propertyName}, ${input.zone}.`
   ).run();
@@ -164,7 +165,7 @@ export async function createVehicleInD1(input: {
   return readVehicleFromD1(id) as Promise<VehicleRecord>;
 }
 
-export async function updateVehicleInD1(id: string, input: { currentStatus: TowStatus; notes: string }) {
+export async function updateVehicleInD1(id: string, input: { currentStatus: TowStatus; notes: string; actorName: string }) {
   const db = getDb();
   const current = await db.prepare("SELECT * FROM vehicles WHERE id = ?").bind(id).first();
   if (!current) return null;
@@ -174,13 +175,13 @@ export async function updateVehicleInD1(id: string, input: { currentStatus: TowS
   if ((current as any).current_status !== input.currentStatus) {
     await db.prepare(
       "INSERT INTO vehicle_activity (id, vehicle_id, type, by_user, timestamp, detail) VALUES (?, ?, ?, ?, ?, ?)"
-    ).bind(createId("act"), id, "Status Change", "Demo User", now.replace("T", " "), `${(current as any).current_status} → ${input.currentStatus}`).run();
+    ).bind(createId("act"), id, "Status Change", input.actorName, now.replace("T", " "), `${(current as any).current_status} → ${input.currentStatus}`).run();
   }
 
   if (input.notes.trim() && input.notes.trim() !== String((current as any).notes || "").trim()) {
     await db.prepare(
       "INSERT INTO vehicle_activity (id, vehicle_id, type, by_user, timestamp, detail) VALUES (?, ?, ?, ?, ?, ?)"
-    ).bind(createId("act"), id, "Note", "Demo User", now.replace("T", " "), input.notes.trim()).run();
+    ).bind(createId("act"), id, "Note", input.actorName, now.replace("T", " "), input.notes.trim()).run();
   }
 
   await db.prepare(
@@ -197,7 +198,7 @@ export async function updateVehicleInD1(id: string, input: { currentStatus: TowS
   ).bind(
     input.currentStatus,
     input.notes,
-    "Demo User",
+    input.actorName,
     input.currentStatus,
     now,
     input.currentStatus,

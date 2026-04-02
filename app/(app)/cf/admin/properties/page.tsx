@@ -1,7 +1,6 @@
-import Link from "next/link";
-import { cookies } from "next/headers";
-import { Building2, PlusCircle } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import { SectionCard } from "@/components/section-card";
+import { requireRole } from "@/lib/auth";
 import { createCloudflarePropertyAction } from "@/lib/cloudflare-management-actions";
 import { readPropertiesFromD1, readTowingCompaniesFromD1 } from "@/lib/server/d1-management-store";
 
@@ -13,26 +12,7 @@ export default async function CloudflareAdminPropertiesPage({
   searchParams: Promise<{ status?: string }>;
 }) {
   const params = await searchParams;
-  const cookieStore = await cookies();
-  const role = cookieStore.get("demo_role")?.value;
-  const userName = cookieStore.get("demo_user_name")?.value;
-
-  if (role !== "Admin") {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-semibold text-white">Property Management</h1>
-          <p className="mt-2 text-sm text-slate-400">This page is restricted to the Admin role.</p>
-        </div>
-        <SectionCard title="Access denied" description="Sign in with the generic login as Admin or choose the Admin demo user.">
-          <Link href="/" className="inline-flex rounded-2xl bg-emerald-500 px-4 py-3 text-sm font-medium text-slate-950">
-            Back to sign in
-          </Link>
-        </SectionCard>
-      </div>
-    );
-  }
-
+  const session = await requireRole(["Admin"]);
   const [properties, towingCompanies] = await Promise.all([
     readPropertiesFromD1(),
     readTowingCompaniesFromD1()
@@ -42,7 +22,7 @@ export default async function CloudflareAdminPropertiesPage({
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-semibold text-white">Property Management</h1>
-        <p className="mt-2 text-sm text-slate-400">Signed in as {userName || "Admin"}. Add and review managed properties in D1.</p>
+        <p className="mt-2 text-sm text-slate-400">Signed in as {session.user.name}. Add and review managed properties in D1.</p>
       </div>
 
       {params.status === "created" && (

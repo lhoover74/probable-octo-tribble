@@ -1,28 +1,20 @@
 "use server";
 
-import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { requireRole } from "@/lib/auth";
 import { createPropertyInD1, createTowingCompanyInD1, createUserInD1 } from "@/lib/server/d1-management-store";
 
-async function requireAdmin() {
-  const cookieStore = await cookies();
-  const role = cookieStore.get("demo_role")?.value;
-
-  if (role !== "Admin") {
-    redirect("/");
-  }
-}
-
 export async function createCloudflareUserAction(formData: FormData) {
-  await requireAdmin();
+  await requireRole(["Admin"]);
 
   await createUserInD1({
     name: String(formData.get("name") || "").trim(),
     email: String(formData.get("email") || "").trim(),
     role: String(formData.get("role") || "Viewer").trim(),
     property: String(formData.get("property") || "").trim(),
-    status: String(formData.get("status") || "Active").trim()
+    status: String(formData.get("status") || "Active").trim(),
+    password: String(formData.get("password") || "").trim()
   });
 
   revalidatePath("/users");
@@ -31,7 +23,7 @@ export async function createCloudflareUserAction(formData: FormData) {
 }
 
 export async function createCloudflarePropertyAction(formData: FormData) {
-  await requireAdmin();
+  await requireRole(["Admin"]);
 
   await createPropertyInD1({
     name: String(formData.get("name") || "").trim(),
@@ -51,7 +43,7 @@ export async function createCloudflarePropertyAction(formData: FormData) {
 }
 
 export async function createCloudflareTowingCompanyAction(formData: FormData) {
-  await requireAdmin();
+  await requireRole(["Admin"]);
 
   await createTowingCompanyInD1({
     companyName: String(formData.get("companyName") || "").trim(),

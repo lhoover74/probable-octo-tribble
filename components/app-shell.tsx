@@ -1,8 +1,7 @@
 import Link from "next/link";
-import { cookies } from "next/headers";
 import { Car, Database, FileText, Home, Plus, Settings, LogOut, Truck as TowTruck, Users, Building2 } from "lucide-react";
 import { ReactNode } from "react";
-import { logoutAction } from "@/lib/session-actions";
+import { logoutAction } from "@/lib/auth-actions";
 
 const nav = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
@@ -17,11 +16,15 @@ const nav = [
   { href: "/reports", label: "Reports", icon: FileText }
 ];
 
-export async function AppShell({ children }: { children: ReactNode }) {
-  const cookieStore = await cookies();
-  const userName = cookieStore.get("demo_user_name")?.value || "Guest";
-  const role = cookieStore.get("demo_role")?.value || "Viewer";
-
+export function AppShell({
+  children,
+  currentUserName,
+  currentUserRole
+}: {
+  children: ReactNode;
+  currentUserName: string;
+  currentUserRole: string;
+}) {
   return (
     <div className="min-h-screen bg-slate-950">
       <div className="grid min-h-screen lg:grid-cols-[280px_1fr]">
@@ -32,8 +35,8 @@ export async function AppShell({ children }: { children: ReactNode }) {
           </div>
 
           <div className="mt-4 rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
-            <p className="text-sm font-medium text-white">{userName}</p>
-            <p className="mt-1 text-xs text-slate-400">Role: {role}</p>
+            <p className="text-sm font-medium text-white">{currentUserName}</p>
+            <p className="mt-1 text-xs text-slate-400">Role: {currentUserRole}</p>
           </div>
 
           <nav className="mt-6 space-y-2">
@@ -59,8 +62,8 @@ export async function AppShell({ children }: { children: ReactNode }) {
               </div>
               <div className="flex items-center gap-3">
                 <div className="hidden rounded-2xl border border-slate-800 bg-slate-900/70 px-4 py-2 text-right sm:block">
-                  <p className="text-sm text-white">{userName}</p>
-                  <p className="text-xs text-slate-400">{role}</p>
+                  <p className="text-sm text-white">{currentUserName}</p>
+                  <p className="text-xs text-slate-400">{currentUserRole}</p>
                 </div>
                 <Link
                   href="/vehicles/new"

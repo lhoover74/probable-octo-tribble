@@ -1,4 +1,5 @@
 import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { createOrUpdateCredential } from "@/lib/server/auth-store";
 
 type D1Env = { DB: any };
 
@@ -13,7 +14,12 @@ function createId(prefix: string) {
 
 export async function readUsersFromD1() {
   const db = getDb();
-  const result = await db.prepare("SELECT * FROM users ORDER BY name ASC").all();
+  const result = await db.prepare(
+    `SELECT users.*, CASE WHEN auth_credentials.user_id IS NULL THEN 0 ELSE 1 END AS password_configured
+     FROM users
+     LEFT JOIN auth_credentials ON auth_credentials.user_id = users.id
+     ORDER BY users.name ASC`
+  ).all();
   return (result.results || []) as Array<{
     id: string;
     name: string;
@@ -21,6 +27,7 @@ export async function readUsersFromD1() {
     role: string;
     property: string;
     status: string;
+    password_configured: number;
   }>;
 }
 
@@ -59,6 +66,7 @@ export async function createUserInD1(input: {
   role: string;
   property: string;
   status: string;
+  password?: string;
 }) {
   const db = getDb();
   const id = createId("user");
@@ -66,6 +74,11 @@ export async function createUserInD1(input: {
     `INSERT INTO users (id, name, email, role, property, status)
      VALUES (?, ?, ?, ?, ?, ?)`
   ).bind(id, input.name, input.email, input.role, input.property, input.status).run();
+
+  if (input.password) {
+    await createOrUpdateCredential(id, input.password);
+  }
+
   return id;
 }
 

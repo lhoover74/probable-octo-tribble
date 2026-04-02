@@ -1,9 +1,40 @@
-import Link from "next/link";
-import { Shield, Camera, Clock3, Truck as TowTruck } from "lucide-react";
-import { users } from "@/lib/mock-data";
-import { genericLoginAction } from "@/lib/session-actions";
+import { redirect } from "next/navigation";
+import { Shield, LockKeyhole, Clock3, Truck as TowTruck } from "lucide-react";
+import { getCurrentSession } from "@/lib/auth";
+import { loginAction, setupInitialAdminAction } from "@/lib/auth-actions";
+import { hasAnyAuthCredentials } from "@/lib/server/auth-store";
 
-export default function HomePage() {
+export const dynamic = "force-dynamic";
+
+function messageForError(error?: string) {
+  switch (error) {
+    case 'invalid_credentials':
+      return 'Invalid email or password.';
+    case 'password_mismatch':
+      return 'Passwords do not match.';
+    case 'password_too_short':
+      return 'Use a password with at least 10 characters.';
+    case 'setup_disabled':
+      return 'Initial admin setup has already been completed.';
+    default:
+      return null;
+  }
+}
+
+export default async function HomePage({
+  searchParams
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const params = await searchParams;
+  const [session, hasCredentials] = await Promise.all([getCurrentSession(), hasAnyAuthCredentials()]);
+
+  if (session) {
+    redirect('/dashboard');
+  }
+
+  const errorMessage = messageForError(params.error);
+
   return (
     <main className="min-h-screen bg-slate-950 px-4 py-10 text-slate-100 sm:px-6 lg:px-8">
       <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1.15fr_0.85fr]">
@@ -14,29 +45,29 @@ export default function HomePage() {
           </div>
 
           <h1 className="mt-6 text-4xl font-semibold tracking-tight text-white sm:text-5xl">
-            Tow tracking built as a website for real field use.
+            Tow tracking built as a secure operations website.
           </h1>
 
           <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">
-            Open it in a mobile browser, document vehicles fast, move cases through tow status, and preserve a full audit trail.
+            Document vehicles, move cases through tow workflow, and keep a time-stamped record of what happened, when, and by whom.
           </p>
 
           <div className="mt-8 grid gap-4 sm:grid-cols-3">
             {[
               {
-                icon: Camera,
-                title: "Camera intake",
-                detail: "Plate and VIN scan flow placeholders with review and correction."
+                icon: LockKeyhole,
+                title: "Protected access",
+                detail: "Password login, persistent sessions, and role-based actions."
               },
               {
                 icon: Clock3,
                 title: "Status workflow",
-                detail: "Observed through tow completion with time-stamped history."
+                detail: "Observed through tow completion with preserved history."
               },
               {
                 icon: Shield,
                 title: "Review-ready",
-                detail: "Notes, photos, and activity preserved for management and legal review."
+                detail: "Notes, photos, and activity preserved for operations and legal review."
               }
             ].map(({ icon: Icon, title, detail }) => (
               <div key={title} className="rounded-3xl border border-slate-800 bg-slate-900/70 p-5">
@@ -49,51 +80,56 @@ export default function HomePage() {
         </section>
 
         <section className="rounded-[2rem] border border-slate-800 bg-slate-900/90 p-6 shadow-soft lg:p-8">
-          <h2 className="text-2xl font-semibold text-white">Sign in</h2>
-          <p className="mt-2 text-sm text-slate-400">Use the generic login below or tap a demo user to open the app with a preset role.</p>
+          <h2 className="text-2xl font-semibold text-white">{hasCredentials ? 'Sign in' : 'Set up first admin'}</h2>
+          <p className="mt-2 text-sm text-slate-400">
+            {hasCredentials
+              ? 'Use your email and password to access the TowTrack operations workspace.'
+              : 'Create the first Admin account to initialize secure access for the system.'}
+          </p>
 
-          <form action={genericLoginAction} className="mt-6 space-y-4 rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
-            <label className="block">
-              <span className="mb-2 block text-sm text-slate-300">Name</span>
-              <input name="userName" defaultValue="Admin User" className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-white" />
-            </label>
-            <label className="block">
-              <span className="mb-2 block text-sm text-slate-300">Email</span>
-              <input name="userEmail" type="email" placeholder="you@example.com" className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-white" />
-            </label>
-            <label className="block">
-              <span className="mb-2 block text-sm text-slate-300">Role</span>
-              <select name="role" defaultValue="Admin" className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-white">
-                {['Admin', 'Manager', 'Officer/Staff', 'Viewer'].map((role) => (
-                  <option key={role}>{role}</option>
-                ))}
-              </select>
-            </label>
-            <button type="submit" className="w-full rounded-2xl bg-emerald-500 px-4 py-3 text-sm font-medium text-slate-950">
-              Continue with Generic Login
-            </button>
-          </form>
-
-          <div className="mt-6">
-            <p className="text-sm text-slate-400">Or choose a demo user:</p>
-            <div className="mt-3 space-y-3">
-              {users.map((user) => (
-                <Link
-                  key={user.id}
-                  href={`/auth/demo/${user.id}`}
-                  className="block rounded-2xl border border-slate-800 bg-slate-950/70 p-4 transition hover:border-slate-700 hover:bg-slate-950"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <p className="font-medium text-white">{user.name}</p>
-                      <p className="mt-1 text-sm text-slate-400">{user.email}</p>
-                    </div>
-                    <span className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">{user.role}</span>
-                  </div>
-                </Link>
-              ))}
+          {errorMessage && (
+            <div className="mt-4 rounded-2xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+              {errorMessage}
             </div>
-          </div>
+          )}
+
+          {hasCredentials ? (
+            <form action={loginAction} className="mt-6 space-y-4 rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+              <label className="block">
+                <span className="mb-2 block text-sm text-slate-300">Email</span>
+                <input name="email" type="email" required className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-white" />
+              </label>
+              <label className="block">
+                <span className="mb-2 block text-sm text-slate-300">Password</span>
+                <input name="password" type="password" required className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-white" />
+              </label>
+              <button type="submit" className="w-full rounded-2xl bg-emerald-500 px-4 py-3 text-sm font-medium text-slate-950">
+                Sign In
+              </button>
+            </form>
+          ) : (
+            <form action={setupInitialAdminAction} className="mt-6 space-y-4 rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+              <label className="block">
+                <span className="mb-2 block text-sm text-slate-300">Admin Name</span>
+                <input name="name" defaultValue="Admin User" required className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-white" />
+              </label>
+              <label className="block">
+                <span className="mb-2 block text-sm text-slate-300">Admin Email</span>
+                <input name="email" type="email" required className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-white" />
+              </label>
+              <label className="block">
+                <span className="mb-2 block text-sm text-slate-300">Password</span>
+                <input name="password" type="password" minLength={10} required className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-white" />
+              </label>
+              <label className="block">
+                <span className="mb-2 block text-sm text-slate-300">Confirm Password</span>
+                <input name="confirmPassword" type="password" minLength={10} required className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-white" />
+              </label>
+              <button type="submit" className="w-full rounded-2xl bg-emerald-500 px-4 py-3 text-sm font-medium text-slate-950">
+                Create Admin Account
+              </button>
+            </form>
+          )}
         </section>
       </div>
     </main>

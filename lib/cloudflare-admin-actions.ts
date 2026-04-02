@@ -1,21 +1,12 @@
 "use server";
 
-import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { requireRole } from "@/lib/auth";
 import { resetDemoDataInD1, seedDemoDataInD1 } from "@/lib/server/d1-admin-store";
 
-async function requireAdmin() {
-  const cookieStore = await cookies();
-  const role = cookieStore.get("demo_role")?.value;
-
-  if (role !== "Admin") {
-    redirect("/");
-  }
-}
-
 export async function seedCloudflareDemoDataAction() {
-  await requireAdmin();
+  await requireRole(["Admin"]);
   await seedDemoDataInD1();
   revalidatePath("/dashboard");
   revalidatePath("/vehicles");
@@ -27,7 +18,7 @@ export async function seedCloudflareDemoDataAction() {
 }
 
 export async function resetCloudflareDemoDataAction() {
-  await requireAdmin();
+  await requireRole(["Admin"]);
   await resetDemoDataInD1();
   revalidatePath("/dashboard");
   revalidatePath("/vehicles");

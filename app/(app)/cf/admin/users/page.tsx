@@ -1,7 +1,6 @@
-import Link from "next/link";
-import { cookies } from "next/headers";
 import { UserPlus } from "lucide-react";
 import { SectionCard } from "@/components/section-card";
+import { requireRole } from "@/lib/auth";
 import { createCloudflareUserAction } from "@/lib/cloudflare-management-actions";
 import { readPropertiesFromD1, readUsersFromD1 } from "@/lib/server/d1-management-store";
 
@@ -13,33 +12,14 @@ export default async function CloudflareAdminUsersPage({
   searchParams: Promise<{ status?: string }>;
 }) {
   const params = await searchParams;
-  const cookieStore = await cookies();
-  const role = cookieStore.get("demo_role")?.value;
-  const userName = cookieStore.get("demo_user_name")?.value;
-
-  if (role !== "Admin") {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-semibold text-white">User Management</h1>
-          <p className="mt-2 text-sm text-slate-400">This page is restricted to the Admin role.</p>
-        </div>
-        <SectionCard title="Access denied" description="Sign in with the generic login as Admin or choose the Admin demo user.">
-          <Link href="/" className="inline-flex rounded-2xl bg-emerald-500 px-4 py-3 text-sm font-medium text-slate-950">
-            Back to sign in
-          </Link>
-        </SectionCard>
-      </div>
-    );
-  }
-
+  const session = await requireRole(["Admin"]);
   const [users, properties] = await Promise.all([readUsersFromD1(), readPropertiesFromD1()]);
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-semibold text-white">User Management</h1>
-        <p className="mt-2 text-sm text-slate-400">Signed in as {userName || "Admin"}. Add and review users stored in Cloudflare D1.</p>
+        <p className="mt-2 text-sm text-slate-400">Signed in as {session.user.name}. Add and review users stored in Cloudflare D1.</p>
       </div>
 
       {params.status === "created" && (
@@ -57,7 +37,7 @@ export default async function CloudflareAdminUsersPage({
                   <th className="px-4 py-3 font-medium">Name</th>
                   <th className="px-4 py-3 font-medium">Role</th>
                   <th className="px-4 py-3 font-medium">Property</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium">Login</th>
                 </tr>
               </thead>
               <tbody>
@@ -69,7 +49,7 @@ export default async function CloudflareAdminUsersPage({
                     </td>
                     <td className="px-4 py-4 text-slate-300">{user.role}</td>
                     <td className="px-4 py-4 text-slate-300">{user.property}</td>
-                    <td className="px-4 py-4 text-slate-300">{user.status}</td>
+                    <td className="px-4 py-4 text-slate-300">{user.password_configured ? 'Ready' : 'No password'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -77,7 +57,7 @@ export default async function CloudflareAdminUsersPage({
           </div>
         </SectionCard>
 
-        <SectionCard title="Add user" description="Create a new user record for the system.">
+        <SectionCard title="Add user" description="Create a new user record with a password for system access.">
           <form action={createCloudflareUserAction} className="space-y-4">
             <label className="block">
               <span className="mb-2 block text-sm text-slate-300">Name</span>
@@ -86,6 +66,10 @@ export default async function CloudflareAdminUsersPage({
             <label className="block">
               <span className="mb-2 block text-sm text-slate-300">Email</span>
               <input name="email" type="email" required className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-white" />
+            </label>
+            <label className="block">
+              <span className="mb-2 block text-sm text-slate-300">Password</span>
+              <input name="password" type="password" minLength={10} required className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-white" />
             </label>
             <label className="block">
               <span className="mb-2 block text-sm text-slate-300">Role</span>

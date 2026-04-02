@@ -1,7 +1,6 @@
-import Link from "next/link";
-import { cookies } from "next/headers";
 import { Database, RotateCcw, Download } from "lucide-react";
 import { SectionCard } from "@/components/section-card";
+import { requireRole } from "@/lib/auth";
 import { resetCloudflareDemoDataAction, seedCloudflareDemoDataAction } from "@/lib/cloudflare-admin-actions";
 
 export const dynamic = "force-dynamic";
@@ -12,38 +11,14 @@ export default async function CloudflareAdminDataPage({
   searchParams: Promise<{ status?: string }>;
 }) {
   const params = await searchParams;
-  const cookieStore = await cookies();
-  const role = cookieStore.get("demo_role")?.value;
-  const userName = cookieStore.get("demo_user_name")?.value;
-
-  if (role !== "Admin") {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-semibold text-white">Admin Data Tools</h1>
-          <p className="mt-2 text-sm text-slate-400">This page is restricted to the Admin demo role.</p>
-        </div>
-
-        <SectionCard title="Access denied" description="Sign in as the Admin demo user to seed or reset D1 starter data.">
-          <div className="space-y-4">
-            <p className="text-sm text-slate-300">
-              Go back to the landing page and choose the Admin demo user, then return here.
-            </p>
-            <Link href="/" className="inline-flex rounded-2xl bg-emerald-500 px-4 py-3 text-sm font-medium text-slate-950">
-              Back to sign in
-            </Link>
-          </div>
-        </SectionCard>
-      </div>
-    );
-  }
+  const session = await requireRole(["Admin"]);
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-semibold text-white">Admin Data Tools</h1>
         <p className="mt-2 text-sm text-slate-400">
-          Signed in as {userName || "Admin"}. Use these controls to seed or reset starter data in Cloudflare D1.
+          Signed in as {session.user.name}. Use these controls to seed or reset starter data in Cloudflare D1.
         </p>
       </div>
 
