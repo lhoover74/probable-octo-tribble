@@ -6,13 +6,14 @@ const SESSION_COOKIE = "tt_session";
 const VEHICLE_WRITE_ROLES = ["Admin", "Manager", "Officer/Staff"];
 
 export type AppSession = {
+  sessionId: string;
   user: AuthSessionUser;
   expiresAt: string;
 };
 
 function parseCookieValue(cookieHeader: string | null, cookieName: string) {
   if (!cookieHeader) return null;
-  const parts = cookieHeader.split(';').map((part) => part.trim());
+  const parts = cookieHeader.split(";").map((part) => part.trim());
   const match = parts.find((part) => part.startsWith(`${cookieName}=`));
   return match ? decodeURIComponent(match.slice(cookieName.length + 1)) : null;
 }
