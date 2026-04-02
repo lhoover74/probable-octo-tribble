@@ -4,6 +4,8 @@ import { StatusBadge } from "@/components/status-badge";
 import { readVehiclesFromD1 } from "@/lib/server/d1-vehicle-store";
 import { formatDateTime } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 export default async function CloudflareVehiclesPage() {
   const vehicles = await readVehiclesFromD1();
 

@@ -6,6 +6,8 @@ import { StatusBadge } from "@/components/status-badge";
 import { properties } from "@/lib/mock-data";
 import { readVehiclesFromD1 } from "@/lib/server/d1-vehicle-store";
 
+export const dynamic = "force-dynamic";
+
 export default async function CloudflareDashboardPage() {
   const vehicles = await readVehiclesFromD1();
   const pendingTow = vehicles.filter((vehicle) => ["Marked for Tow", "Tow Requested", "Awaiting Tow Truck"].includes(vehicle.currentStatus)).length;

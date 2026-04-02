@@ -6,6 +6,8 @@ import { StatusBadge } from "@/components/status-badge";
 import { readVehiclesFromD1 } from "@/lib/server/d1-vehicle-store";
 import { formatDateTime } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 export default async function CloudflareTowRequestsPage() {
   const vehicles = await readVehiclesFromD1();
   const active = vehicles.filter((vehicle) => ["Marked for Tow", "Tow Requested", "Awaiting Tow Truck"].includes(vehicle.currentStatus));

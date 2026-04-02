@@ -6,6 +6,8 @@ import { updateCloudflareVehicleAction } from "@/lib/cloudflare-actions";
 import { readVehicleFromD1 } from "@/lib/server/d1-vehicle-store";
 import { formatDateTime } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 export default async function CloudflareVehicleDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const vehicle = await readVehicleFromD1(id);
