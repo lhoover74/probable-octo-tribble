@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { requireRole, requireSession, setSessionCookie, destroyCurrentSession } from "@/lib/auth";
+import { sendInviteEmail, sendPasswordResetEmail } from "@/lib/server/email-service";
 import {
   acceptInvite,
   authenticateUser,
@@ -95,7 +96,26 @@ export async function createInviteAction(formData: FormData) {
     invitedByEmail: session.user.email
   });
 
-  redirect(`/cf/admin/access?created=1&email=${encodeURIComponent(email)}&token=${encodeURIComponent(invite.token)}`);
+  const delivery = await sendInviteEmail({
+    to: email,
+    role,
+    property,
+    token: invite.token
+  });
+
+  if (delivery.sent) {
+    await createSecurityAuditLog({
+      actorUserId: session.user.id,
+      actorEmail: session.user.email,
+      action: "auth.invite_email_sent",
+      targetType: "invite",
+      targetId: email,
+      detail: `Invite email sent to ${email}.`
+    });
+    redirect(`/cf/admin/access?created=1&email=${encodeURIComponent(email)}&sent=1`);
+  }
+
+  redirect(`/cf/admin/access?created=1&email=${encodeURIComponent(email)}&token=${encodeURIComponent(invite.token)}&sent=0`);
 }
 
 export async function acceptInviteAction(formData: FormData) {
@@ -132,7 +152,25 @@ export async function requestPasswordResetAction(formData: FormData) {
     redirect(`/reset-password?requested=1&email=${encodeURIComponent(email)}`);
   }
 
-  redirect(`/reset-password?requested=1&email=${encodeURIComponent(email)}&token=${encodeURIComponent(reset.token)}`);
+  const delivery = await sendPasswordResetEmail({
+    to: reset.email,
+    name: reset.name,
+    token: reset.token
+  });
+
+  if (delivery.sent) {
+    await createSecurityAuditLog({
+      actorUserId: reset.userId,
+      actorEmail: reset.email,
+      action: "auth.password_reset_email_sent",
+      targetType: "user",
+      targetId: reset.userId,
+      detail: `Password reset email sent to ${reset.email}.`
+    });
+    redirect(`/reset-password?requested=1&email=${encodeURIComponent(email)}&sent=1`);
+  }
+
+  redirect(`/reset-password?requested=1&email=${encodeURIComponent(email)}&token=${encodeURIComponent(reset.token)}&sent=0`);
 }
 
 export async function completePasswordResetAction(formData: FormData) {
