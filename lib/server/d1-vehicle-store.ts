@@ -1,13 +1,17 @@
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import type { TowStatus, VehicleRecord } from "@/lib/types";
 
+type D1Env = {
+  DB: any;
+};
+
 function createId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
 function getDb(): any {
   const { env } = getCloudflareContext();
-  return env.DB;
+  return (env as D1Env).DB;
 }
 
 function mapVehicleRow(row: any, photos: any[], activity: any[]): VehicleRecord {
