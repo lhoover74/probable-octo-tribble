@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { UserPlus } from "lucide-react";
 import { SectionCard } from "@/components/section-card";
 import { requireRole } from "@/lib/auth";
@@ -13,13 +14,13 @@ export default async function CloudflareAdminUsersPage({
 }) {
   const params = await searchParams;
   const session = await requireRole(["Admin"]);
-  const [users, properties] = await Promise.all([readUsersFromD1(), readPropertiesFromD1()]);
+  const [users, properties] = await Promise.all([readUsersFromD1(), readPropertiesFromD1({ includeInactive: true })]);
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-semibold text-white">User Management</h1>
-        <p className="mt-2 text-sm text-slate-400">Signed in as {session.user.name}. Add and review users stored in Cloudflare D1.</p>
+        <p className="mt-2 text-sm text-slate-400">Signed in as {session.user.name}. Add, edit, and deactivate users stored in Cloudflare D1.</p>
       </div>
 
       {params.status === "created" && (
@@ -37,7 +38,9 @@ export default async function CloudflareAdminUsersPage({
                   <th className="px-4 py-3 font-medium">Name</th>
                   <th className="px-4 py-3 font-medium">Role</th>
                   <th className="px-4 py-3 font-medium">Property</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
                   <th className="px-4 py-3 font-medium">Login</th>
+                  <th className="px-4 py-3 font-medium">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -49,7 +52,13 @@ export default async function CloudflareAdminUsersPage({
                     </td>
                     <td className="px-4 py-4 text-slate-300">{user.role}</td>
                     <td className="px-4 py-4 text-slate-300">{user.property}</td>
-                    <td className="px-4 py-4 text-slate-300">{user.password_configured ? 'Ready' : 'No password'}</td>
+                    <td className="px-4 py-4 text-slate-300">{user.status}</td>
+                    <td className="px-4 py-4 text-slate-300">{user.password_configured ? "Ready" : "No password"}</td>
+                    <td className="px-4 py-4">
+                      <Link href={`/cf/admin/users/${user.id}`} className="text-sm text-emerald-300 hover:text-emerald-200">
+                        Edit
+                      </Link>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -57,7 +66,7 @@ export default async function CloudflareAdminUsersPage({
           </div>
         </SectionCard>
 
-        <SectionCard title="Add user" description="Create a new user record with a password for system access.">
+        <SectionCard title="Add user" description="Create a new user record. Use Access Management when you want to send an invite instead.">
           <form action={createCloudflareUserAction} className="space-y-4">
             <label className="block">
               <span className="mb-2 block text-sm text-slate-300">Name</span>
@@ -68,8 +77,8 @@ export default async function CloudflareAdminUsersPage({
               <input name="email" type="email" required className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-white" />
             </label>
             <label className="block">
-              <span className="mb-2 block text-sm text-slate-300">Password</span>
-              <input name="password" type="password" minLength={10} required className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-white" />
+              <span className="mb-2 block text-sm text-slate-300">Password (optional)</span>
+              <input name="password" type="password" minLength={10} className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-white" />
             </label>
             <label className="block">
               <span className="mb-2 block text-sm text-slate-300">Role</span>
@@ -101,6 +110,7 @@ export default async function CloudflareAdminUsersPage({
               Create User
             </button>
           </form>
+          <p className="mt-4 text-xs text-slate-500">Need invite-based onboarding? Use the Access page to send a real invite email.</p>
         </SectionCard>
       </div>
     </div>

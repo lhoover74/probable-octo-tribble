@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { PlusCircle } from "lucide-react";
 import { SectionCard } from "@/components/section-card";
 import { requireRole } from "@/lib/auth";
@@ -14,15 +15,15 @@ export default async function CloudflareAdminPropertiesPage({
   const params = await searchParams;
   const session = await requireRole(["Admin"]);
   const [properties, towingCompanies] = await Promise.all([
-    readPropertiesFromD1(),
-    readTowingCompaniesFromD1()
+    readPropertiesFromD1({ includeInactive: true }),
+    readTowingCompaniesFromD1({ includeInactive: true })
   ]);
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-semibold text-white">Property Management</h1>
-        <p className="mt-2 text-sm text-slate-400">Signed in as {session.user.name}. Add and review managed properties in D1.</p>
+        <p className="mt-2 text-sm text-slate-400">Signed in as {session.user.name}. Add, edit, and deactivate managed properties in D1.</p>
       </div>
 
       {params.status === "created" && (
@@ -41,7 +42,12 @@ export default async function CloudflareAdminPropertiesPage({
                     <p className="font-medium text-white">{property.name}</p>
                     <p className="mt-1 text-sm text-slate-400">{property.address}</p>
                   </div>
-                  <span className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">{property.code}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">{property.code}</span>
+                    <span className={`rounded-full border px-3 py-1 text-xs ${property.active ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200' : 'border-rose-500/30 bg-rose-500/10 text-rose-200'}`}>
+                      {property.active ? 'Active' : 'Inactive'}
+                    </span>
+                  </div>
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {property.zones.map((zone) => (
@@ -50,7 +56,12 @@ export default async function CloudflareAdminPropertiesPage({
                     </span>
                   ))}
                 </div>
-                <p className="mt-3 text-sm text-slate-400">Default tow: {property.defaultTowCompany}</p>
+                <div className="mt-3 flex items-center justify-between gap-3">
+                  <p className="text-sm text-slate-400">Default tow: {property.defaultTowCompany}</p>
+                  <Link href={`/cf/admin/properties/${property.id}`} className="text-sm text-emerald-300 hover:text-emerald-200">
+                    Edit
+                  </Link>
+                </div>
               </div>
             ))}
           </div>

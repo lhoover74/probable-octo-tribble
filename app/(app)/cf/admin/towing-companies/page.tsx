@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { PlusCircle } from "lucide-react";
 import { SectionCard } from "@/components/section-card";
 import { requireRole } from "@/lib/auth";
@@ -13,7 +14,7 @@ export default async function CloudflareAdminTowingCompaniesPage({
 }) {
   const params = await searchParams;
   const session = await requireRole(["Admin"]);
-  const companies = await readTowingCompaniesFromD1();
+  const companies = await readTowingCompaniesFromD1({ includeInactive: true });
 
   return (
     <div className="space-y-6">
@@ -29,7 +30,7 @@ export default async function CloudflareAdminTowingCompaniesPage({
       )}
 
       <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-        <SectionCard title="Active towing companies" description="Companies currently available in Cloudflare D1.">
+        <SectionCard title="Towing companies" description="Companies currently available in Cloudflare D1.">
           <div className="space-y-4">
             {companies.map((company) => (
               <div key={company.id} className="rounded-2xl border border-slate-800 bg-slate-950/50 p-4">
@@ -38,7 +39,14 @@ export default async function CloudflareAdminTowingCompaniesPage({
                     <p className="font-medium text-white">{company.company_name}</p>
                     <p className="mt-1 text-sm text-slate-400">{company.phone} • {company.email}</p>
                   </div>
-                  <span className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">{company.active ? 'Active' : 'Inactive'}</span>
+                  <div className="flex items-center gap-2">
+                    <span className={`rounded-full border px-3 py-1 text-xs ${company.active ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200' : 'border-rose-500/30 bg-rose-500/10 text-rose-200'}`}>
+                      {company.active ? 'Active' : 'Inactive'}
+                    </span>
+                    <Link href={`/cf/admin/towing-companies/${company.id}`} className="text-sm text-emerald-300 hover:text-emerald-200">
+                      Edit
+                    </Link>
+                  </div>
                 </div>
                 <p className="mt-3 text-sm text-slate-300">Dispatch: {company.dispatch_contact}</p>
                 <p className="mt-2 text-sm text-slate-500">{company.notes}</p>

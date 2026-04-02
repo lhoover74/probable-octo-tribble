@@ -10,12 +10,12 @@ export const dynamic = "force-dynamic";
 export default async function CloudflareAdminAccessPage({
   searchParams
 }: {
-  searchParams: Promise<{ created?: string; email?: string; token?: string }>;
+  searchParams: Promise<{ created?: string; email?: string; token?: string; sent?: string }>;
 }) {
   const params = await searchParams;
   const session = await requireRole(["Admin"]);
   const [properties, pendingInvites, auditLogs] = await Promise.all([
-    readPropertiesFromD1(),
+    readPropertiesFromD1({ includeInactive: true }),
     listPendingInvites(20),
     listSecurityAuditLogs(20)
   ]);
@@ -27,8 +27,16 @@ export default async function CloudflareAdminAccessPage({
         <p className="mt-2 text-sm text-slate-400">Signed in as {session.user.name}. Manage invites and review security-sensitive account activity.</p>
       </div>
 
-      {params.created === "1" && params.token && (
-        <SectionCard title="Invite created" description="No email provider is configured yet, so copy the invite link below and send it manually.">
+      {params.created === "1" && params.sent === "1" && (
+        <SectionCard title="Invite email sent" description="The invite email was sent successfully.">
+          <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-emerald-200">
+            Invite email sent to {params.email}.
+          </div>
+        </SectionCard>
+      )}
+
+      {params.created === "1" && params.sent === "0" && params.token && (
+        <SectionCard title="Invite created" description="Email delivery is not configured yet, so copy the invite link below and send it manually.">
           <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-950/50 p-4 text-sm text-slate-300">
             <p>Email: {params.email}</p>
             <p className="break-all text-emerald-300">/accept-invite?token={params.token}</p>
