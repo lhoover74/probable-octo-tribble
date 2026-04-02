@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { Building2, PlusCircle } from "lucide-react";
 import { SectionCard } from "@/components/section-card";
 import { createCloudflarePropertyAction } from "@/lib/cloudflare-management-actions";
-import { readPropertiesFromD1 } from "@/lib/server/d1-management-store";
+import { readPropertiesFromD1, readTowingCompaniesFromD1 } from "@/lib/server/d1-management-store";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +33,10 @@ export default async function CloudflareAdminPropertiesPage({
     );
   }
 
-  const properties = await readPropertiesFromD1();
+  const [properties, towingCompanies] = await Promise.all([
+    readPropertiesFromD1(),
+    readTowingCompaniesFromD1()
+  ]);
 
   return (
     <div className="space-y-6">
@@ -97,7 +100,12 @@ export default async function CloudflareAdminPropertiesPage({
             </label>
             <label className="block">
               <span className="mb-2 block text-sm text-slate-300">Default Towing Company</span>
-              <input name="defaultTowCompany" className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-white" />
+              <input name="defaultTowCompany" list="tow-company-options" className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-white" />
+              <datalist id="tow-company-options">
+                {towingCompanies.map((company) => (
+                  <option key={company.id} value={company.company_name} />
+                ))}
+              </datalist>
             </label>
             <label className="block">
               <span className="mb-2 block text-sm text-slate-300">Notes</span>

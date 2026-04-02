@@ -1,10 +1,19 @@
 import { CheckCircle2 } from "lucide-react";
 import { SectionCard } from "@/components/section-card";
 import { createCloudflareVehicleAction } from "@/lib/cloudflare-actions";
-import { properties, towReasons, statuses } from "@/lib/mock-data";
+import { towReasons, statuses } from "@/lib/mock-data";
+import { readPropertiesFromD1, readTowingCompaniesFromD1 } from "@/lib/server/d1-management-store";
 
-export default function CloudflareNewVehiclePage() {
+export const dynamic = "force-dynamic";
+
+export default async function CloudflareNewVehiclePage() {
+  const [properties, towingCompanies] = await Promise.all([
+    readPropertiesFromD1(),
+    readTowingCompaniesFromD1()
+  ]);
+
   const property = properties[0];
+  const allZones = Array.from(new Set(properties.flatMap((entry) => entry.zones))).sort();
 
   return (
     <div className="space-y-6">
@@ -13,7 +22,7 @@ export default function CloudflareNewVehiclePage() {
         <p className="mt-2 text-sm text-slate-400">This form saves directly into the Cloudflare D1 database binding.</p>
       </div>
 
-      <SectionCard title="Create D1-backed record" description="Submitting writes to Cloudflare D1 and redirects to the saved record.">
+      <SectionCard title="Create D1-backed record" description="Property, zones, and towing company options now come from Cloudflare D1.">
         <form action={createCloudflareVehicleAction} className="grid gap-4 md:grid-cols-2">
           {[
             ["plate", "License Plate", "KTR-9084"],
@@ -35,8 +44,8 @@ export default function CloudflareNewVehiclePage() {
 
           <label className="block">
             <span className="mb-2 block text-sm text-slate-300">Property</span>
-            <select name="propertyName" defaultValue={property.name} className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-white">
-              {properties.map((entry) => (
+            <select name="propertyName" defaultValue={property?.name || ""} className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-white">
+              {properties.length === 0 ? <option value="">No properties found</option> : properties.map((entry) => (
                 <option key={entry.id}>{entry.name}</option>
               ))}
             </select>
@@ -44,11 +53,12 @@ export default function CloudflareNewVehiclePage() {
 
           <label className="block">
             <span className="mb-2 block text-sm text-slate-300">Zone</span>
-            <select name="zone" defaultValue={property.zones[0]} className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-white">
-              {property.zones.map((zone) => (
-                <option key={zone}>{zone}</option>
+            <input name="zone" list="zone-options" defaultValue={property?.zones[0] || ""} className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-white" />
+            <datalist id="zone-options">
+              {allZones.map((zone) => (
+                <option key={zone} value={zone} />
               ))}
-            </select>
+            </datalist>
           </label>
 
           <label className="block">
@@ -71,7 +81,11 @@ export default function CloudflareNewVehiclePage() {
 
           <label className="block">
             <span className="mb-2 block text-sm text-slate-300">Towing Company</span>
-            <input name="towingCompany" defaultValue={property.defaultTowCompany} className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-white" />
+            <select name="towingCompany" defaultValue={property?.defaultTowCompany || towingCompanies[0]?.company_name || ""} className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-white">
+              {towingCompanies.length === 0 ? <option value="">No active towing companies found</option> : towingCompanies.map((company) => (
+                <option key={company.id}>{company.company_name}</option>
+              ))}
+            </select>
           </label>
 
           <label className="block md:col-span-2">

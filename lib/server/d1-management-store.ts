@@ -39,6 +39,20 @@ export async function readPropertiesFromD1() {
   }));
 }
 
+export async function readTowingCompaniesFromD1() {
+  const db = getDb();
+  const result = await db.prepare("SELECT * FROM towing_companies WHERE active = 1 ORDER BY company_name ASC").all();
+  return (result.results || []) as Array<{
+    id: string;
+    company_name: string;
+    phone: string;
+    email: string;
+    dispatch_contact: string;
+    notes: string;
+    active: number;
+  }>;
+}
+
 export async function createUserInD1(input: {
   name: string;
   email: string;
