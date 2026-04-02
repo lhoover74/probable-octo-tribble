@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AlertTriangle, Clock3, TowTruck } from "lucide-react";
+import { AlertTriangle, Clock3, Truck as TowTruck } from "lucide-react";
 import { MetricCard } from "@/components/metric-card";
 import { SectionCard } from "@/components/section-card";
 import { StatusBadge } from "@/components/status-badge";

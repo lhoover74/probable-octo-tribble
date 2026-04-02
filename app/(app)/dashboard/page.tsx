@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AlertTriangle, Car, CheckCircle2, TowTruck, XCircle } from "lucide-react";
+import { AlertTriangle, Car, CheckCircle2, Truck as TowTruck, XCircle } from "lucide-react";
 import { MetricCard } from "@/components/metric-card";
 import { SectionCard } from "@/components/section-card";
 import { StatusBadge } from "@/components/status-badge";

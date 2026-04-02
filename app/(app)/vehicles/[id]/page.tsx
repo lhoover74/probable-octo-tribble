@@ -5,8 +5,9 @@ import { StatusBadge } from "@/components/status-badge";
 import { statuses, vehicles } from "@/lib/mock-data";
 import { formatDateTime } from "@/lib/utils";
 
-export default function VehicleDetailPage({ params }: { params: { id: string } }) {
-  const vehicle = vehicles.find((entry) => entry.id === params.id);
+export default async function VehicleDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const vehicle = vehicles.find((entry) => entry.id === id);
 
   if (!vehicle) {
     notFound();

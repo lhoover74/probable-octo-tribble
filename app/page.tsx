@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Shield, Camera, Clock3, TowTruck } from "lucide-react";
+import { Shield, Camera, Clock3, Truck as TowTruck } from "lucide-react";
 import { users } from "@/lib/mock-data";
 
 export default function HomePage() {

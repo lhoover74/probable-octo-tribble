@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Car, FileText, Home, Plus, Settings, TowTruck, Users, Building2 } from "lucide-react";
+import { Car, FileText, Home, Plus, Settings, Truck as TowTruck, Users, Building2 } from "lucide-react";
 import { ReactNode } from "react";
 
 const nav = [
