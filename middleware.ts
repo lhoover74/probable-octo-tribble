@@ -8,7 +8,7 @@ function buildTarget(pathname: string) {
   if (pathname === "/tow-requests") return "/cf/tow-requests";
   if (pathname === "/users") return "/cf/admin/users";
   if (pathname === "/properties") return "/cf/admin/properties";
-  if (pathname === "/settings") return "/cf/admin/towing-companies";
+  if (pathname === "/settings") return "/cf/account/security";
   if (pathname === "/api/vehicles") return "/api/cf-vehicles";
 
   const vehicleMatch = pathname.match(/^\/vehicles\/([^/]+)$/);
