@@ -1,20 +1,27 @@
 import Link from "next/link";
-import { Car, Database, FileText, Home, Plus, Settings, Truck as TowTruck, Users, Building2 } from "lucide-react";
+import { cookies } from "next/headers";
+import { Car, Database, FileText, Home, Plus, Settings, LogOut, Truck as TowTruck, Users, Building2 } from "lucide-react";
 import { ReactNode } from "react";
+import { logoutAction } from "@/lib/session-actions";
 
 const nav = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
   { href: "/vehicles/new", label: "Add Vehicle", icon: Plus },
   { href: "/vehicles", label: "Vehicle Records", icon: Car },
   { href: "/tow-requests", label: "Tow Requests", icon: TowTruck },
-  { href: "/reports", label: "Reports", icon: FileText },
-  { href: "/properties", label: "Properties", icon: Building2 },
   { href: "/users", label: "Users", icon: Users },
+  { href: "/properties", label: "Properties", icon: Building2 },
+  { href: "/cf/admin/towing-companies", label: "Tow Companies", icon: TowTruck },
+  { href: "/cf/admin/data", label: "Admin Data", icon: Database },
   { href: "/settings", label: "Settings", icon: Settings },
-  { href: "/cf/admin/data", label: "Admin Data", icon: Database }
+  { href: "/reports", label: "Reports", icon: FileText }
 ];
 
-export function AppShell({ children }: { children: ReactNode }) {
+export async function AppShell({ children }: { children: ReactNode }) {
+  const cookieStore = await cookies();
+  const userName = cookieStore.get("demo_user_name")?.value || "Guest";
+  const role = cookieStore.get("demo_role")?.value || "Viewer";
+
   return (
     <div className="min-h-screen bg-slate-950">
       <div className="grid min-h-screen lg:grid-cols-[280px_1fr]">
@@ -22,6 +29,11 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="rounded-2xl border border-slate-800 bg-slate-900 p-4">
             <p className="text-lg font-semibold text-white">TowTrack</p>
             <p className="mt-1 text-sm text-slate-400">Browser-first tow operations</p>
+          </div>
+
+          <div className="mt-4 rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
+            <p className="text-sm font-medium text-white">{userName}</p>
+            <p className="mt-1 text-xs text-slate-400">Role: {role}</p>
           </div>
 
           <nav className="mt-6 space-y-2">
@@ -45,12 +57,24 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <p className="text-lg font-semibold text-white">TowTrack Web</p>
                 <p className="text-sm text-slate-400">Responsive website for phones, tablets, and desktop</p>
               </div>
-              <Link
-                href="/vehicles/new"
-                className="rounded-2xl bg-emerald-500 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-emerald-400"
-              >
-                New Record
-              </Link>
+              <div className="flex items-center gap-3">
+                <div className="hidden rounded-2xl border border-slate-800 bg-slate-900/70 px-4 py-2 text-right sm:block">
+                  <p className="text-sm text-white">{userName}</p>
+                  <p className="text-xs text-slate-400">{role}</p>
+                </div>
+                <Link
+                  href="/vehicles/new"
+                  className="rounded-2xl bg-emerald-500 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-emerald-400"
+                >
+                  New Record
+                </Link>
+                <form action={logoutAction}>
+                  <button type="submit" className="inline-flex items-center gap-2 rounded-2xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-slate-300">
+                    <LogOut className="h-4 w-4" />
+                    Sign Out
+                  </button>
+                </form>
+              </div>
             </div>
           </header>
 

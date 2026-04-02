@@ -3,7 +3,7 @@
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createPropertyInD1, createUserInD1 } from "@/lib/server/d1-management-store";
+import { createPropertyInD1, createTowingCompanyInD1, createUserInD1 } from "@/lib/server/d1-management-store";
 
 async function requireAdmin() {
   const cookieStore = await cookies();
@@ -45,5 +45,26 @@ export async function createCloudflarePropertyAction(formData: FormData) {
 
   revalidatePath("/properties");
   revalidatePath("/cf/admin/properties");
+  revalidatePath("/vehicles/new");
+  revalidatePath("/cf/vehicles/new");
   redirect("/cf/admin/properties?status=created");
+}
+
+export async function createCloudflareTowingCompanyAction(formData: FormData) {
+  await requireAdmin();
+
+  await createTowingCompanyInD1({
+    companyName: String(formData.get("companyName") || "").trim(),
+    phone: String(formData.get("phone") || "").trim(),
+    email: String(formData.get("email") || "").trim(),
+    dispatchContact: String(formData.get("dispatchContact") || "").trim(),
+    notes: String(formData.get("notes") || "").trim(),
+    active: String(formData.get("active") || "on") === "on"
+  });
+
+  revalidatePath("/cf/admin/towing-companies");
+  revalidatePath("/cf/admin/properties");
+  revalidatePath("/vehicles/new");
+  revalidatePath("/cf/vehicles/new");
+  redirect("/cf/admin/towing-companies?status=created");
 }

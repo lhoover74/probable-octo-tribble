@@ -101,3 +101,29 @@ export async function createPropertyInD1(input: {
 
   return id;
 }
+
+export async function createTowingCompanyInD1(input: {
+  companyName: string;
+  phone: string;
+  email: string;
+  dispatchContact: string;
+  notes: string;
+  active: boolean;
+}) {
+  const db = getDb();
+  const id = createId("tow");
+  await db.prepare(
+    `INSERT INTO towing_companies (id, company_name, phone, email, dispatch_contact, notes, active)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`
+  ).bind(
+    id,
+    input.companyName,
+    input.phone,
+    input.email,
+    input.dispatchContact,
+    input.notes,
+    input.active ? 1 : 0
+  ).run();
+
+  return id;
+}
