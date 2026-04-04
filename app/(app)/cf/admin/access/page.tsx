@@ -7,10 +7,27 @@ import { listPendingInvites, listSecurityAuditLogs } from "@/lib/server/auth-sto
 
 export const dynamic = "force-dynamic";
 
+function deliveryFailureMessage(reason?: string) {
+  switch (reason) {
+    case "missing_runtime_configuration":
+      return "Email sending is missing a runtime setting. Check RESEND_API_KEY, EMAIL_FROM, and APP_BASE_URL in Cloudflare.";
+    case "resend_api_key_rejected":
+      return "Resend rejected the API key. Re-check the RESEND_API_KEY secret in Cloudflare.";
+    case "sender_or_domain_rejected":
+      return "Resend rejected the sender or domain. Check EMAIL_FROM and verify the sending domain in Resend.";
+    case "rate_limited":
+      return "Resend rate-limited the request. Wait a moment and try again.";
+    case "resend_request_failed":
+      return "Resend returned an error for this send request. Check Worker logs for the exact response.";
+    default:
+      return "Email delivery failed for an unknown reason. Check Worker logs for the exact response.";
+  }
+}
+
 export default async function CloudflareAdminAccessPage({
   searchParams
 }: {
-  searchParams: Promise<{ created?: string; email?: string; token?: string; sent?: string }>;
+  searchParams: Promise<{ created?: string; email?: string; token?: string; sent?: string; reason?: string }>;
 }) {
   const params = await searchParams;
   const session = await requireRole(["Admin"]);
@@ -36,9 +53,10 @@ export default async function CloudflareAdminAccessPage({
       )}
 
       {params.created === "1" && params.sent === "0" && params.token && (
-        <SectionCard title="Invite created" description="Email delivery is not configured yet, so copy the invite link below and send it manually.">
-          <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-950/50 p-4 text-sm text-slate-300">
+        <SectionCard title="Invite email failed" description={deliveryFailureMessage(params.reason)}>
+          <div className="space-y-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-100">
             <p>Email: {params.email}</p>
+            <p>Failure type: {params.reason || "unknown_delivery_error"}</p>
             <p className="break-all text-emerald-300">/accept-invite?token={params.token}</p>
           </div>
         </SectionCard>

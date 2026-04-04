@@ -16,6 +16,33 @@ import {
   setupInitialAdmin
 } from "@/lib/server/auth-store";
 
+function mapEmailDeliveryReason(reason?: string) {
+  if (!reason) return "unknown_delivery_error";
+
+  const normalized = reason.toLowerCase();
+
+  if (reason === "email_not_configured" || reason === "missing_base_url") {
+    return "missing_runtime_configuration";
+  }
+  if (normalized.includes("401") || normalized.includes("unauthorized") || normalized.includes("api key")) {
+    return "resend_api_key_rejected";
+  }
+  if (
+    normalized.includes("403") ||
+    normalized.includes("domain") ||
+    normalized.includes("sender") ||
+    normalized.includes("from") ||
+    normalized.includes("verify")
+  ) {
+    return "sender_or_domain_rejected";
+  }
+  if (normalized.includes("429") || normalized.includes("rate")) {
+    return "rate_limited";
+  }
+
+  return "resend_request_failed";
+}
+
 export async function setupInitialAdminAction(formData: FormData) {
   const name = String(formData.get("name") || "").trim();
   const email = String(formData.get("email") || "").trim();
@@ -115,7 +142,8 @@ export async function createInviteAction(formData: FormData) {
     redirect(`/cf/admin/access?created=1&email=${encodeURIComponent(email)}&sent=1`);
   }
 
-  redirect(`/cf/admin/access?created=1&email=${encodeURIComponent(email)}&token=${encodeURIComponent(invite.token)}&sent=0`);
+  const reason = mapEmailDeliveryReason(delivery.reason);
+  redirect(`/cf/admin/access?created=1&email=${encodeURIComponent(email)}&token=${encodeURIComponent(invite.token)}&sent=0&reason=${encodeURIComponent(reason)}`);
 }
 
 export async function acceptInviteAction(formData: FormData) {
@@ -170,7 +198,8 @@ export async function requestPasswordResetAction(formData: FormData) {
     redirect(`/reset-password?requested=1&email=${encodeURIComponent(email)}&sent=1`);
   }
 
-  redirect(`/reset-password?requested=1&email=${encodeURIComponent(email)}&token=${encodeURIComponent(reset.token)}&sent=0`);
+  const reason = mapEmailDeliveryReason(delivery.reason);
+  redirect(`/reset-password?requested=1&email=${encodeURIComponent(email)}&token=${encodeURIComponent(reset.token)}&sent=0&reason=${encodeURIComponent(reason)}`);
 }
 
 export async function completePasswordResetAction(formData: FormData) {
