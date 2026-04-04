@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Car, Database, FileText, Home, Plus, LogOut, KeyRound, UserCog, Truck as TowTruck, Users, Building2 } from "lucide-react";
+import { Car, Database, FileText, Home, Plus, LogOut, KeyRound, UserCog, Wrench, Truck as TowTruck, Users, Building2 } from "lucide-react";
 import { ReactNode } from "react";
 import { logoutAction } from "@/lib/auth-actions";
 
@@ -12,6 +12,7 @@ const nav = [
   { href: "/properties", label: "Properties", icon: Building2 },
   { href: "/cf/admin/towing-companies", label: "Tow Companies", icon: TowTruck },
   { href: "/cf/admin/access", label: "Access", icon: UserCog },
+  { href: "/cf/admin/runtime-debug", label: "Runtime Debug", icon: Wrench },
   { href: "/cf/admin/data", label: "Admin Data", icon: Database },
   { href: "/settings", label: "Security", icon: KeyRound },
   { href: "/reports", label: "Reports", icon: FileText }
